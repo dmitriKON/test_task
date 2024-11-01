@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        /* Basic styling and responsive layout */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #5a88bc; /* Blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: white; /* White background for the container */
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+        .input-container input {
+            flex: 1;
+            width: 75%;
+        }
+        .button {
+            width: 120px;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+        }
+        .button:hover {
+            background-color: #e0e0e0;
+        }
+        .list-container {
+            display: flex;
+            gap: 10px;
+        }
+        #pairList {
+            flex: 1;
+            height: 250px;
+            width: 75%;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Adjust gap to be consistent with other spacings */
+            padding-top: 10px; /* Add padding to match gap spacing */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Test</h1>
+    
+    <!-- First container for input and add button -->
+    <div class="input-container">
+        <input type="text" id="pairInput" placeholder="Name=Value">
+        <div class="button" onclick="addPair()">Add</div>
+    </div>
+    
+    <!-- Second container for list and action buttons -->
+    <div class="list-container">
+        <select id="pairList" multiple></select>
+        <div class="button-group">
+            <div class="button" onclick="sortByName()">Sort by Name</div>
+            <div class="button" onclick="sortByValue()">Sort by Value</div>
+            <div class="button" onclick="deleteSelected()">Delete</div>
+            <div class="button" onclick="showXML()">Show as XML</div>
+        </div>
+    </div>
+    
+    <!-- XML Output -->
+    <div id="xmlOutput" style="display:none;"></div>
+</div>
+
+<script>
+    const pairs = [];
+
+    // Listen for the Enter key on the input field
+    document.getElementById("pairInput").addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevent form submission if applicable
+            addPair(); // Trigger the addPair function
+        }
+    });
+
+    function addPair() {
+        const input = document.getElementById("pairInput").value.trim();
+        const match = input.match(/^(\w+)\s*=\s*(\w+)$/);
+
+        if (match) {
+            const name = match[1];
+            const value = match[2];
+
+            // Check if a pair with the same name already exists
+            const nameExists = pairs.some(pair => pair.name === name);
+
+            if (nameExists) {
+                alert("This name already exists in the list. Please use a different name.");
+            } else {
+                pairs.push({ name, value });
+                updateList();
+                document.getElementById("pairInput").value = "";
+            }
+        } else {
+            alert("Invalid format. Use: Name = Value. Names and Values can contain only alpha-numeric characters");
+        }
+    }
+
+    function updateList() {
+        const list = document.getElementById("pairList");
+        list.innerHTML = pairs.map((pair, index) =>
+            `<option value="${index}">${pair.name}=${pair.value}</option>`
+        ).join("");
+    }
+
+    function sortByName() {
+        pairs.sort((a, b) => a.name.localeCompare(b.name));
+        updateList();
+    }
+
+    function sortByValue() {
+        pairs.sort((a, b) => a.value.localeCompare(b.value));
+        updateList();
+    }
+
+    function deleteSelected() {
+        const list = document.getElementById("pairList");
+        const selected = Array.from(list.selectedOptions).map(option => parseInt(option.value));
+        for (let i = selected.length - 1; i >= 0; i--) {
+            pairs.splice(selected[i], 1);
+        }
+        updateList();
+    }
+
+    function showXML() {
+        const xml = `<pairs>\n${pairs.map(pair =>
+            `  <pair><name>${pair.name}</name><value>${pair.value}</value></pair>`
+        ).join("\n")}\n</pairs>`;
+
+        const xmlOutput = document.getElementById("xmlOutput");
+        xmlOutput.style.display = "block";
+        xmlOutput.innerText = xml;
+    }
+</script>
+</body>
+</html>
